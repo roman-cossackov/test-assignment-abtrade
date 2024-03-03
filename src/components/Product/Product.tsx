@@ -1,31 +1,43 @@
+import { IProduct } from '../../types/interfaces';
+import Field from '../Field/Field';
 import Button, { ButtonTheme } from '../ui/Button/Button';
 import styles from './Product.module.scss';
 
 interface ProductProps {
-  name: string;
-  price: number;
-  quantity: number;
+  product: IProduct;
 }
 
-const Product = ({ name, price, quantity }: ProductProps) => {
+const Product = ({ product }: ProductProps) => {
   return (
     <div className={styles.product}>
-      <div className={styles.field}>
-        <label htmlFor="name">Название</label>
-        <input type="text" id="name" name="name" value={name} />
-      </div>
-      <div className={styles.field}>
-        <label htmlFor="price">Цена</label>
-        <input type="number" id="price" name="price" value={price} />
-      </div>
-      <div className={styles.field}>
-        <label htmlFor="quantity">Количество</label>
-        <input type="number" id="name" name="name" value={quantity} />
-      </div>
-      <div className={styles.field}>
-        <label htmlFor="sum">Сумма</label>
-        <input type="number" id="name" name="name" value={price * quantity} />
-      </div>
+      <Field
+        groupId={+product.id}
+        label="Название"
+        type="text"
+        value={product.name}
+        changeValueHandler={() => {}}
+      />
+      <Field
+        groupId={+product.id}
+        label="Цена"
+        type="number"
+        value={product.price}
+        changeValueHandler={() => {}}
+      />
+      <Field
+        groupId={+product.id}
+        label="Кол-во"
+        type="number"
+        value={product.count}
+        changeValueHandler={() => {}}
+      />
+      <Field
+        groupId={+product.id}
+        label="Сумма"
+        type="number"
+        value={product.sum}
+        changeValueHandler={() => {}}
+      />
       <div className={styles.buttonContainer}>
         <Button theme={ButtonTheme.RED}>удалить</Button>
       </div>

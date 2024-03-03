@@ -5,6 +5,7 @@ import styles from './Button.module.scss';
 interface ButtonProps {
   children: ReactNode;
   theme: ButtonTheme;
+  onClick: () => void;
 }
 
 export enum ButtonTheme {
@@ -12,8 +13,12 @@ export enum ButtonTheme {
   BLUE = 'blue',
 }
 
-const Button = ({ theme, children }: ButtonProps) => {
-  return <button className={`${styles.button} ${styles[theme]}`}>{children}</button>;
+const Button = ({ theme, children, onClick }: ButtonProps) => {
+  return (
+    <button className={`${styles.button} ${styles[theme]}`} onClick={onClick}>
+      {children}
+    </button>
+  );
 };
 
 export default Button;

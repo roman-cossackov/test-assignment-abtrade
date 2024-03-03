@@ -1,22 +1,43 @@
+import { useFormContext } from '../../context/FormContext';
+import { IGroup, IProduct } from '../../types/interfaces';
+import Field from '../Field/Field';
 import Product from '../Product/Product';
 import Button, { ButtonTheme } from '../ui/Button/Button';
 import styles from './Group.module.scss';
 
 interface GroupProps {
-  groupNumber: number;
+  group: IGroup;
 }
 
-const Group = ({ groupNumber }: GroupProps) => {
+const Group = ({ group }: GroupProps) => {
+  const { deleteGroup, addProduct } = useFormContext();
+
   return (
     <div className={styles.group}>
-      <h2 className={styles.title}>Группа {groupNumber}</h2>
+      <h2 className={styles.title}>Группа {group.id}</h2>
       <div className={styles.sum}>
-        <label htmlFor="sum">Сумма групы {groupNumber}</label>
-        <input type="text" id="sum" name="sum" disabled />
+        <Field
+          groupId={+group.id}
+          label="Сумма"
+          type="text"
+          value={group.sum}
+          changeValueHandler={() => {}}
+        />
       </div>
-      <Button theme={ButtonTheme.RED}>удалить группу</Button>
-      <Product name={'Продукт 1'} price={10} quantity={3} />
-      <Button theme={ButtonTheme.BLUE}>добавить продукт</Button>
+      <Button theme={ButtonTheme.RED} onClick={() => deleteGroup(+group.id)}>
+        удалить группу
+      </Button>
+      <ul className={styles.products}>
+        {group.products.map((product) => (
+          <li key={product.id}>
+            <Product product={product} />
+          </li>
+        ))}
+      </ul>
+
+      <Button theme={ButtonTheme.BLUE} onClick={() => addProduct(+group.id)}>
+        добавить продукт
+      </Button>
     </div>
   );
 };

@@ -1,13 +1,30 @@
+import { useFormContext } from '../../context/FormContext';
 import Group from '../Group/Group';
+import Button, { ButtonTheme } from '../ui/Button/Button';
 import styles from './Form.module.scss';
 
 // interface FormProps {}
 
-const Form = (props: FormProps) => {
+const Form = () => {
+  const { data, addGroup } = useFormContext();
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+  };
+
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <h2 className={styles.title}>Форма</h2>
-      <Group groupNumber={1} />
+      <ul className={styles.groups}>
+        {data.groups.map((group) => (
+          <li key={group.id}>
+            <Group group={group} />
+          </li>
+        ))}
+      </ul>
+      <Button theme={ButtonTheme.BLUE} onClick={() => addGroup}>
+        добавить группу
+      </Button>
     </form>
   );
 };
