@@ -22,7 +22,12 @@ const Form = () => {
           </li>
         ))}
       </ul>
-      <Button theme={ButtonTheme.BLUE} onClick={() => addGroup}>
+      <Button
+        theme={ButtonTheme.BLUE}
+        onClick={() => {
+          addGroup();
+        }}
+      >
         добавить группу
       </Button>
     </form>

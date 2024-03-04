@@ -17,25 +17,34 @@ const Group = ({ group }: GroupProps) => {
       <h2 className={styles.title}>Группа {group.id}</h2>
       <div className={styles.sum}>
         <Field
-          groupId={+group.id}
-          label="Сумма"
+          id={+group.id}
+          label={`Сумма группы ${group.id}`}
           type="text"
           value={group.sum}
-          changeValueHandler={() => {}}
         />
       </div>
-      <Button theme={ButtonTheme.RED} onClick={() => deleteGroup(+group.id)}>
+      <Button
+        theme={ButtonTheme.RED}
+        onClick={() => {
+          deleteGroup(+group.id);
+        }}
+      >
         удалить группу
       </Button>
       <ul className={styles.products}>
         {group.products.map((product) => (
           <li key={product.id}>
-            <Product product={product} />
+            <Product product={product} groupId={+group.id} />
           </li>
         ))}
       </ul>
 
-      <Button theme={ButtonTheme.BLUE} onClick={() => addProduct(+group.id)}>
+      <Button
+        theme={ButtonTheme.BLUE}
+        onClick={() => {
+          addProduct(+group.id);
+        }}
+      >
         добавить продукт
       </Button>
     </div>

@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react';
+import uuid from 'react-uuid';
+
+import { useFormContext } from '../../context/FormContext';
 import { IProduct } from '../../types/interfaces';
 import Field from '../Field/Field';
 import Button, { ButtonTheme } from '../ui/Button/Button';
@@ -5,41 +9,91 @@ import styles from './Product.module.scss';
 
 interface ProductProps {
   product: IProduct;
+  groupId: number;
 }
 
-const Product = ({ product }: ProductProps) => {
+const ids = Array(4)
+  .fill(null)
+  .map(() => uuid());
+
+const Product = ({ product, groupId }: ProductProps) => {
+  const [name, setName] = useState(product.name);
+  const [price, setPrice] = useState(product.price);
+  const [count, setCount] = useState(product.count);
+  const [sum, setSum] = useState(product.sum);
+
+  const { deleteProduct, updateFields } = useFormContext();
+
+  useEffect(() => {
+    setSum(price * count);
+    const handler = setTimeout(() => {
+      const newProduct = { ...product, name, price, count, sum };
+      updateFields(groupId, +product.id, newProduct);
+    }, 1000);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [price, count]);
+
+  const fields = [
+    {
+      id: ids[0],
+      label: 'Название',
+      type: 'text',
+      value: name,
+      handleChangeValue: (newValue: string | number) => {
+        setName(newValue.toString());
+      },
+    },
+    {
+      id: ids[1],
+      label: 'Цена',
+      type: 'number',
+      value: price,
+      handleChangeValue: (newValue: number | string) => {
+        setPrice(+newValue);
+      },
+    },
+    {
+      id: ids[2],
+      label: 'Количество',
+      type: 'number',
+      value: count,
+      handleChangeValue: (newValue: number | string) => {
+        setCount(+newValue);
+      },
+    },
+    {
+      id: ids[3],
+      label: 'Сумма',
+      type: 'number',
+      value: sum,
+      isReadOnly: true,
+    },
+  ];
   return (
     <div className={styles.product}>
-      <Field
-        groupId={+product.id}
-        label="Название"
-        type="text"
-        value={product.name}
-        changeValueHandler={() => {}}
-      />
-      <Field
-        groupId={+product.id}
-        label="Цена"
-        type="number"
-        value={product.price}
-        changeValueHandler={() => {}}
-      />
-      <Field
-        groupId={+product.id}
-        label="Кол-во"
-        type="number"
-        value={product.count}
-        changeValueHandler={() => {}}
-      />
-      <Field
-        groupId={+product.id}
-        label="Сумма"
-        type="number"
-        value={product.sum}
-        changeValueHandler={() => {}}
-      />
+      {fields.map((field) => (
+        <Field
+          key={field.id}
+          id={+field.id}
+          label={field.label}
+          type={field.type}
+          value={field.value}
+          handleChangeValue={field.handleChangeValue}
+          isReadOnly={field.isReadOnly}
+        />
+      ))}
       <div className={styles.buttonContainer}>
-        <Button theme={ButtonTheme.RED}>удалить</Button>
+        <Button
+          theme={ButtonTheme.RED}
+          onClick={() => {
+            deleteProduct(groupId, +product.id);
+          }}
+        >
+          удалить
+        </Button>
       </div>
     </div>
   );

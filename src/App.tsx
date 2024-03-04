@@ -7,7 +7,7 @@ function App() {
   return (
     <div className="App">
       <FormContextProvider>
-        <h1>Вкладка 1 из X</h1>
+        <h1 className="tab">Вкладка 1 из X</h1>
         <Form />
       </FormContextProvider>
     </div>

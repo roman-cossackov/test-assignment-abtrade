@@ -1,13 +1,15 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 
-import { IForm } from '../types/interfaces';
+import { IForm, IGroup, IProduct } from '../types/interfaces';
 
 interface FormContext {
   data: IForm;
   setData: (newObj: IForm) => void;
-  addGroup: (formData: IForm) => void;
+  addGroup: () => void;
   deleteGroup: (groupId: number) => void;
   addProduct: (groupId: number) => void;
+  deleteProduct: (groupId: number, productId: number) => void;
+  updateFields: (groupId: number, productId: number, newProduct: IProduct) => void;
 }
 
 interface FormContextProvider {
@@ -20,30 +22,8 @@ export const useFormContext = () => {
   return useContext(FormContext);
 };
 
-// const formData: IForm = {
-//   sum: 111,
-//   groups: [
-//     {
-//       id: 1,
-//       sum: 10,
-//       products: [
-//         { id: 1, name: 'Продукт 1', sum: 6, count: 3, price: 2 },
-//         { id: 2, name: 'Продукт 2', sum: 4, count: 2, price: 2 },
-//       ],
-//     },
-//     {
-//       id: 2,
-//       sum: 10,
-//       products: [
-//         { id: 1, name: 'Продукт 1', sum: 1, count: 1, price: 1 },
-//         { id: 2, name: 'Продукт 2', sum: 100, count: 1, price: 100 },
-//       ],
-//     },
-//   ],
-// };
-
 const getFormData = (): IForm => {
-  let data = localStorage.getItem('formData');
+  let data: string = localStorage.formData;
   if (!data) {
     data = `{"sum":0,"groups":[{"id":1,"sum":0,"products":[{"id":1,"name":"Продукт 1","sum":0,"count":0,"price":0}]}]}`;
   }
@@ -54,8 +34,22 @@ const getFormData = (): IForm => {
 export const FormContextProvider = ({ children }: FormContextProvider) => {
   const [formData, setFormData] = useState(getFormData());
 
+  const countSum = (form: IForm): IForm => {
+    form.sum = 0;
+    for (const group of form.groups) {
+      group.sum = 0;
+      for (const product of group.products) {
+        group.sum += product.sum;
+      }
+      form.sum += group.sum;
+    }
+
+    return form;
+  };
+
   const setData = (newObj: IForm) => {
-    localStorage.setItem('formData', JSON.stringify(newObj));
+    newObj = countSum(newObj);
+    localStorage.formData = JSON.stringify(newObj);
     setFormData(newObj);
   };
 
@@ -67,7 +61,7 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     const newGroup = {
       id: newId,
       sum: 0,
-      products: [{ id: 1, name: `Продукт ${newId}`, sum: 0, count: 0, price: 0 }],
+      products: [{ id: 1, name: `Продукт 1`, sum: 0, count: 0, price: 0 }],
     };
     const newFormData = {
       ...formData,
@@ -85,11 +79,23 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
   };
 
   const addProduct = (groupId: number) => {
-    const productList = formData.groups[groupId].products;
-    const newId = productList.length > 0 ? +productList[productList.length - 1] + 1 : 1;
-    const newProduct = { id: 1, name: `Продукт ${newId}`, sum: 0, count: 0, price: 0 };
+    const productList = formData.groups.find((group) => group.id === groupId)?.products;
+
+    if (!productList) {
+      return;
+    }
+
+    const newId =
+      productList.length > 0 ? +productList[productList.length - 1].id + 1 : 1;
+    const newProduct = {
+      id: newId,
+      name: `Продукт ${newId}`,
+      sum: 0,
+      count: 0,
+      price: 0,
+    };
     const newGroup = {
-      ...formData.groups[groupId],
+      ...formData.groups.find((group) => group.id === groupId),
       products: [...productList, newProduct],
     };
 
@@ -98,7 +104,41 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
       groups: formData.groups.map((group) => (group.id === groupId ? newGroup : group)),
     };
 
-    setData(newFormData);
+    setData(newFormData as IForm);
+  };
+
+  const deleteProduct = (groupId: number, productId: number) => {
+    const updatedFormData = {
+      ...formData,
+      groups: formData.groups.map((group) => {
+        if (group.id === groupId) {
+          const updatedProducts = group.products.filter(
+            (product) => product.id !== productId,
+          );
+          return { ...group, products: updatedProducts };
+        }
+        return group;
+      }),
+    };
+
+    setData(updatedFormData as IForm);
+  };
+
+  const updateFields = (groupId: number, productId: number, newProduct: IProduct) => {
+    const updatedFormData: IForm = {
+      ...formData,
+      groups: formData.groups.map((group) => {
+        if (group.id === groupId) {
+          const updatedProducts = group.products.map((product) =>
+            product.id === productId ? newProduct : product,
+          );
+          return { ...group, products: updatedProducts };
+        }
+        return group;
+      }),
+    };
+
+    setData(updatedFormData);
   };
 
   const contextValue: FormContext = {
@@ -107,6 +147,8 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     addGroup,
     deleteGroup,
     addProduct,
+    deleteProduct,
+    updateFields,
   };
 
   return <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>;

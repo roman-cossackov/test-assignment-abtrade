@@ -1,27 +1,34 @@
-import { HTMLInputTypeAttribute } from 'react';
+import { debounce } from 'lodash';
+import { HTMLInputTypeAttribute, useCallback } from 'react';
 
 import styles from './Field.module.scss';
 
 interface FieldProps {
-  groupId: number;
+  id: number;
   label: string;
   type?: HTMLInputTypeAttribute;
   value: string | number;
-  changeValueHandler: () => void;
+  handleChangeValue?: (newValue: number | string) => void;
+  isReadOnly?: boolean;
 }
 
-const Field = ({ groupId, label, type, value, changeValueHandler }: FieldProps) => {
+const Field = ({ id, label, type, value, handleChangeValue, isReadOnly }: FieldProps) => {
   return (
-    <div className={styles.field}>
-      <label htmlFor={`${label}${groupId}`}>{label}</label>
+    <legend className={styles.field}>
+      <label htmlFor={`${id}`}>{label}</label>
       <input
         type={type}
-        id={`${groupId}`}
+        id={`${id}`}
         name="name"
         value={value}
-        onChange={changeValueHandler}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          if (handleChangeValue) {
+            handleChangeValue(event.target.value);
+          }
+        }}
+        readOnly={isReadOnly}
       />
-    </div>
+    </legend>
   );
 };
 
