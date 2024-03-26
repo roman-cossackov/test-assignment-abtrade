@@ -3,8 +3,6 @@ import Group from '../Group/Group';
 import Button, { ButtonTheme } from '../ui/Button/Button';
 import styles from './Form.module.scss';
 
-// interface FormProps {}
-
 const Form = () => {
   const { data, addGroup } = useFormContext();
 
@@ -18,7 +16,7 @@ const Form = () => {
       <ul className={styles.groups}>
         {data.groups.map((group) => (
           <li key={group.id}>
-            <Group group={group} />
+            <Group groupId={+group.id} />
           </li>
         ))}
       </ul>

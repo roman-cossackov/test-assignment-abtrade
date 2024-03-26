@@ -1,5 +1,4 @@
-import { debounce } from 'lodash';
-import { HTMLInputTypeAttribute, useCallback } from 'react';
+import { HTMLInputTypeAttribute } from 'react';
 
 import styles from './Field.module.scss';
 
@@ -10,9 +9,20 @@ interface FieldProps {
   value: string | number;
   handleChangeValue?: (newValue: number | string) => void;
   isReadOnly?: boolean;
+  max?: number;
+  min?: number;
 }
 
-const Field = ({ id, label, type, value, handleChangeValue, isReadOnly }: FieldProps) => {
+const Field = ({
+  id,
+  label,
+  type,
+  value,
+  handleChangeValue,
+  isReadOnly,
+  max,
+  min,
+}: FieldProps) => {
   return (
     <legend className={styles.field}>
       <label htmlFor={`${id}`}>{label}</label>
@@ -27,6 +37,8 @@ const Field = ({ id, label, type, value, handleChangeValue, isReadOnly }: FieldP
           }
         }}
         readOnly={isReadOnly}
+        max={max}
+        min={min}
       />
     </legend>
   );

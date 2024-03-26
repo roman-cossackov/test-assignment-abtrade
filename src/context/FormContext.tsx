@@ -1,15 +1,19 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 
-import { IForm, IGroup, IProduct } from '../types/interfaces';
+import { IForm, IProduct } from '../types/interfaces';
 
 interface FormContext {
   data: IForm;
   setData: (newObj: IForm) => void;
   addGroup: () => void;
   deleteGroup: (groupId: number) => void;
-  addProduct: (groupId: number) => void;
-  deleteProduct: (groupId: number, productId: number) => void;
-  updateFields: (groupId: number, productId: number, newProduct: IProduct) => void;
+  addProductInLocalStorage: (groupId: number) => void;
+  deleteProductInLocalStorage: (groupId: number, productId: number) => void;
+  updateFieldsInLocalStorage: (
+    groupId: number,
+    productId: number,
+    newProduct: IProduct,
+  ) => void;
 }
 
 interface FormContextProvider {
@@ -78,15 +82,16 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     setData(newFormData);
   };
 
-  const addProduct = (groupId: number) => {
-    const productList = formData.groups.find((group) => group.id === groupId)?.products;
+  //обновить эту функцию
+  const addProductInLocalStorage = (groupId: number) => {
+    const data = getFormData();
+    const productList = data.groups.find((group) => group.id === groupId)?.products;
 
     if (!productList) {
       return;
     }
 
-    const newId =
-      productList.length > 0 ? +productList[productList.length - 1].id + 1 : 1;
+    const newId = +productList[productList.length - 1].id + 1;
     const newProduct = {
       id: newId,
       name: `Продукт ${newId}`,
@@ -94,21 +99,23 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
       count: 0,
       price: 0,
     };
+
     const newGroup = {
-      ...formData.groups.find((group) => group.id === groupId),
+      ...data.groups.find((group) => group.id === groupId),
       products: [...productList, newProduct],
     };
 
     const newFormData = {
-      ...formData,
-      groups: formData.groups.map((group) => (group.id === groupId ? newGroup : group)),
+      ...data,
+      groups: data.groups.map((group) => (group.id === groupId ? newGroup : group)),
     };
 
-    setData(newFormData as IForm);
+    localStorage.formData = JSON.stringify(newFormData);
+    setFormData(newFormData);
   };
 
-  const deleteProduct = (groupId: number, productId: number) => {
-    const updatedFormData = {
+  const deleteProductInLocalStorage = (groupId: number, productId: number) => {
+    let updatedFormData = {
       ...formData,
       groups: formData.groups.map((group) => {
         if (group.id === groupId) {
@@ -117,15 +124,28 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
           );
           return { ...group, products: updatedProducts };
         }
+
         return group;
       }),
     };
 
-    setData(updatedFormData as IForm);
+    if (!updatedFormData.groups.find((group) => group.id === groupId)?.products.length) {
+      console.log('hello');
+      updatedFormData = {
+        ...formData,
+        groups: formData.groups.filter((group) => group.id !== groupId),
+      };
+    }
+
+    setData(updatedFormData);
   };
 
-  const updateFields = (groupId: number, productId: number, newProduct: IProduct) => {
-    const updatedFormData: IForm = {
+  const updateFieldsInLocalStorage = (
+    groupId: number,
+    productId: number,
+    newProduct: IProduct,
+  ) => {
+    let updatedFormData: IForm = {
       ...formData,
       groups: formData.groups.map((group) => {
         if (group.id === groupId) {
@@ -138,7 +158,9 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
       }),
     };
 
-    setData(updatedFormData);
+    updatedFormData = countSum(updatedFormData);
+
+    localStorage.formData = JSON.stringify(updatedFormData);
   };
 
   const contextValue: FormContext = {
@@ -146,9 +168,9 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     setData,
     addGroup,
     deleteGroup,
-    addProduct,
-    deleteProduct,
-    updateFields,
+    addProductInLocalStorage,
+    deleteProductInLocalStorage,
+    updateFieldsInLocalStorage,
   };
 
   return <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>;
