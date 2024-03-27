@@ -43,6 +43,10 @@ const Group = ({ groupId }: GroupProps) => {
       products: groupData.products.filter((product) => product.id !== productId),
     };
 
+    let newSum = 0;
+    udpatedData.products.forEach((product) => (newSum += product.sum));
+    udpatedData.sum = newSum;
+
     setGroupData(udpatedData);
   };
 

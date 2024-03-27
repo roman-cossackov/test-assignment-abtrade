@@ -31,7 +31,7 @@ const Product = ({ product, groupId, updateGroupData, deleteProduct }: ProductPr
     const newProduct = { ...product, name, price, count, sum: price * count };
     updateGroupData(+product.id, newProduct);
     updateFieldsInLocalStorage(groupId, +product.id, newProduct);
-  }, [price, count]);
+  }, [price, count, name]);
 
   const fields = [
     {

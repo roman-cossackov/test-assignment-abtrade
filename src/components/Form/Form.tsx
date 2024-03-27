@@ -1,10 +1,11 @@
 import { useFormContext } from '../../context/FormContext';
 import Group from '../Group/Group';
+import Total from '../Total/Total';
 import Button, { ButtonTheme } from '../ui/Button/Button';
 import styles from './Form.module.scss';
 
 const Form = () => {
-  const { data, addGroup } = useFormContext();
+  const { data, addGroup, logForm } = useFormContext();
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -27,6 +28,10 @@ const Form = () => {
         }}
       >
         добавить группу
+      </Button>
+      <Total initialSum={data.sum} />
+      <Button theme={ButtonTheme.BLUE} onClick={logForm}>
+        Отправить форму
       </Button>
     </form>
   );

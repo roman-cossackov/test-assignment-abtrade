@@ -14,11 +14,14 @@ interface FormContext {
     productId: number,
     newProduct: IProduct,
   ) => void;
+  logForm: () => void;
 }
 
 interface FormContextProvider {
   children: ReactNode;
 }
+
+const DEFAULT_DATA = `{"sum":0,"groups":[{"id":1,"sum":0,"products":[{"id":1,"name":"Продукт 1","sum":0,"count":0,"price":0}]}]}`;
 
 export const FormContext = createContext({} as FormContext);
 
@@ -29,7 +32,7 @@ export const useFormContext = () => {
 const getFormData = (): IForm => {
   let data: string = localStorage.formData;
   if (!data) {
-    data = `{"sum":0,"groups":[{"id":1,"sum":0,"products":[{"id":1,"name":"Продукт 1","sum":0,"count":0,"price":0}]}]}`;
+    data = DEFAULT_DATA;
   }
   const parsedData = JSON.parse(data);
   return parsedData;
@@ -82,7 +85,6 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     setData(newFormData);
   };
 
-  //обновить эту функцию
   const addProductInLocalStorage = (groupId: number) => {
     const data = getFormData();
     const productList = data.groups.find((group) => group.id === groupId)?.products;
@@ -100,8 +102,14 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
       price: 0,
     };
 
+    const prevGroup = data.groups.find((group) => group.id === groupId);
+
+    if (!prevGroup) {
+      return;
+    }
+
     const newGroup = {
-      ...data.groups.find((group) => group.id === groupId),
+      ...prevGroup,
       products: [...productList, newProduct],
     };
 
@@ -130,7 +138,6 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     };
 
     if (!updatedFormData.groups.find((group) => group.id === groupId)?.products.length) {
-      console.log('hello');
       updatedFormData = {
         ...formData,
         groups: formData.groups.filter((group) => group.id !== groupId),
@@ -138,6 +145,7 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     }
 
     setData(updatedFormData);
+    window.dispatchEvent(new Event('storage'));
   };
 
   const updateFieldsInLocalStorage = (
@@ -145,9 +153,10 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     productId: number,
     newProduct: IProduct,
   ) => {
+    const data = getFormData();
     let updatedFormData: IForm = {
-      ...formData,
-      groups: formData.groups.map((group) => {
+      ...data,
+      groups: data.groups.map((group) => {
         if (group.id === groupId) {
           const updatedProducts = group.products.map((product) =>
             product.id === productId ? newProduct : product,
@@ -161,6 +170,13 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     updatedFormData = countSum(updatedFormData);
 
     localStorage.formData = JSON.stringify(updatedFormData);
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const logForm = () => {
+    console.log(getFormData());
+    setData(JSON.parse(DEFAULT_DATA));
+    window.dispatchEvent(new Event('storage'));
   };
 
   const contextValue: FormContext = {
@@ -171,6 +187,7 @@ export const FormContextProvider = ({ children }: FormContextProvider) => {
     addProductInLocalStorage,
     deleteProductInLocalStorage,
     updateFieldsInLocalStorage,
+    logForm,
   };
 
   return <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>;
